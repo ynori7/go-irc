@@ -3,11 +3,11 @@ package model
 import "strings"
 
 type Message struct {
-	Type string
-	Sender User
+	Type     string
+	Sender   User
 	Location string
-	Message string
-	Raw string
+	Message  string
+	Raw      string
 }
 
 /**

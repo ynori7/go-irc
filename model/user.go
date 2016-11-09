@@ -3,10 +3,10 @@ package model
 import "regexp"
 
 type User struct {
-	Nick string
+	Nick     string
 	Username string
-	Host string
-	Raw string
+	Host     string
+	Raw      string
 }
 
 /**
@@ -14,7 +14,7 @@ type User struct {
  * Example string:
  * ynori7!~ynori7@unaffiliated/ynori7
  */
-func NewUser(userString string) (User) {
+func NewUser(userString string) User {
 	ircUser := User{Raw: userString}
 
 	re, err := regexp.Compile(`(.*)!(.*)@(.*)`)

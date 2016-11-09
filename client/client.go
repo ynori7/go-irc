@@ -10,19 +10,47 @@ import (
 	"github.com/ynori7/go-irc/model"
 )
 
-type Connection struct {
+/*
+   Here is basic IRC client. The simplest way to use it is to create a new client and then call Listen, providing
+   a message handler. Here's the most basic example:
+
+   conn, err := client.NewConnection("server.whatever.net:6667", false, "myuser")
+   if err != nil {
+       log.Fatal(err)
+   }
+
+   conn.Listen(func(conn client.Client, message model.Message) {
+	if message.Type == "PING" {
+		conn.Pong(message.Message)
+	}
+   })
+
+   In this example, the client will connect to the server and respond to any pings from the server.
+ */
+
+type MessageHandler func(connection Client, message model.Message)
+
+type Client struct {
 	Connection       net.Conn
 	ConnectionString string
 	UseSSL           bool
 	Nick             string
 }
 
-type MessageHandler func(connection Connection, message model.Message)
+func NewConnection(connectionString string, useSSL bool, nick string) (Client, error) {
+	conn := Client{
+		Nick:             nick,
+		ConnectionString: connectionString,
+		UseSSL:           useSSL,
+	}
+
+	return conn, conn.Connect()
+}
 
 /**
  * Establish connection to the server according to the configuration.
  */
-func (c *Connection) Connect() (err error) {
+func (c *Client) Connect() (err error) {
 	if c.UseSSL {
 		c.Connection, err = tls.Dial("tcp", c.ConnectionString, &tls.Config{InsecureSkipVerify: true})
 	} else {
@@ -37,7 +65,10 @@ func (c *Connection) Connect() (err error) {
 	return err
 }
 
-func (c *Connection) Listen(messageHandler MessageHandler) {
+/**
+ * Listen to the connection and call the callback function, messageHandler, on any received data
+ */
+func (c Client) Listen(messageHandler MessageHandler) {
 	//Start reading from the connection
 	connbuf := bufio.NewReader(c.Connection)
 	for {
@@ -55,20 +86,20 @@ func (c *Connection) Listen(messageHandler MessageHandler) {
 /**
  * Send the specified message to the specified recipient or channel
  */
-func (c *Connection) SendMessage(msg string, to string) {
+func (c *Client) SendMessage(msg string, to string) {
 	fmt.Fprintf(c.Connection, "PRIVMSG %s :%s\r\n", to, msg)
 }
 
 /**
  * Join the specified channel
  */
-func (c *Connection) JoinChannel(channel string) {
+func (c *Client) JoinChannel(channel string) {
 	fmt.Fprintf(c.Connection, "JOIN %s\r\n", channel)
 }
 
 /**
  * Respond to server ping
  */
-func (c *Connection) Pong(server string) {
+func (c *Client) Pong(server string) {
 	fmt.Fprintf(c.Connection, "PONG %s\r\n", server)
 }
