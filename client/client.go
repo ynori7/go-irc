@@ -10,24 +10,6 @@ import (
 	"github.com/ynori7/go-irc/model"
 )
 
-/*
-   Here is basic IRC client. The simplest way to use it is to create a new client and then call Listen, providing
-   a message handler. Here's the most basic example:
-
-   conn, err := client.NewConnection("server.whatever.net:6667", false, "myuser")
-   if err != nil {
-       log.Fatal(err)
-   }
-
-   conn.Listen(func(conn client.Client, message model.Message) {
-	if message.Type == "PING" {
-		conn.Pong(message.Message)
-	}
-   })
-
-   In this example, the client will connect to the server and respond to any pings from the server.
- */
-
 type MessageHandler func(connection Client, message model.Message)
 
 type Client struct {
