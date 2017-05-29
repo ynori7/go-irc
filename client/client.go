@@ -85,3 +85,10 @@ func (c *Client) JoinChannel(channel string) {
 func (c *Client) Pong(server string) {
 	fmt.Fprintf(c.Connection, "PONG %s\r\n", server)
 }
+
+/**
+ * Sets the specified mode for the given nick and channel
+ */
+func (c *Client) SetMode(location, mode, nick string) {
+	fmt.Fprintf(c.Connection, "MODE %s %s %s\r\n", location, mode, nick)
+}
