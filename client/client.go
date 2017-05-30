@@ -40,8 +40,8 @@ func (c *Client) Connect() (err error) {
 	}
 
 	if err == nil {
-		fmt.Fprintf(c.Connection, "USER %s %s %s :%s\r\n", c.Nick, c.Nick, c.Nick, c.Nick)
-		fmt.Fprintf(c.Connection, "NICK %s\r\n", c.Nick)
+		fmt.Fprintf(c.Connection, USER+" %s %s %s :%s\r\n", c.Nick, c.Nick, c.Nick, c.Nick)
+		fmt.Fprintf(c.Connection, NICK+" %s\r\n", c.Nick)
 	}
 
 	return err
@@ -69,26 +69,26 @@ func (c Client) Listen(messageHandler MessageHandler) {
  * Send the specified message to the specified recipient or channel
  */
 func (c *Client) SendMessage(msg string, to string) {
-	fmt.Fprintf(c.Connection, "PRIVMSG %s :%s\r\n", to, msg)
+	fmt.Fprintf(c.Connection, PRIVMSG+" %s :%s\r\n", to, msg)
 }
 
 /**
  * Join the specified channel
  */
 func (c *Client) JoinChannel(channel string) {
-	fmt.Fprintf(c.Connection, "JOIN %s\r\n", channel)
+	fmt.Fprintf(c.Connection, JOIN+" %s\r\n", channel)
 }
 
 /**
  * Respond to server ping
  */
 func (c *Client) Pong(server string) {
-	fmt.Fprintf(c.Connection, "PONG %s\r\n", server)
+	fmt.Fprintf(c.Connection, PONG+" %s\r\n", server)
 }
 
 /**
  * Sets the specified mode for the given nick and channel
  */
 func (c *Client) SetMode(location, mode, nick string) {
-	fmt.Fprintf(c.Connection, "MODE %s %s %s\r\n", location, mode, nick)
+	fmt.Fprintf(c.Connection, MODE+" %s %s %s\r\n", location, mode, nick)
 }
