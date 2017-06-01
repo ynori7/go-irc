@@ -5,10 +5,7 @@ Go IRC is a very basic IRC client which can connect to a server (supports SSL co
 The simplest way to use it is to create a new `Client` and then call the `Listen` method, providing a custom `MessageHandler`. Here's the most basic example:
 
 ```
-conn, err := client.NewConnection("server.whatever.net:6667", false, "myuser")
-if err != nil {
-    log.Fatal(err)
-}
+conn := client.NewConnection("server.whatever.net:6667", false, "myuser")
 
 conn.Listen(func(conn client.Client, message model.Message) {
     if message.Type == "PING" {
