@@ -4,13 +4,15 @@ import (
 	"bufio"
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net"
+	"time"
 
 	"github.com/ynori7/go-irc/model"
 )
 
 type MessageHandler func(connection Client, message model.Message)
+
+const MAX_RECONNECT_TRIES = 3
 
 type Client struct {
 	Connection       net.Conn
@@ -19,48 +21,69 @@ type Client struct {
 	Nick             string
 }
 
-func NewConnection(connectionString string, useSSL bool, nick string) (Client, error) {
+func NewConnection(connectionString string, useSSL bool, nick string) Client {
 	conn := Client{
 		Nick:             nick,
 		ConnectionString: connectionString,
 		UseSSL:           useSSL,
 	}
 
-	return conn, conn.Connect()
+	return conn
+}
+
+/**
+ * Establishes a connection, listens to it, and handles re-establishing the connection
+ * in case of errors.
+ */
+func (c Client) Listen(messageHandler MessageHandler) {
+	var reconnectRetries = 0
+	var err error
+	for reconnectRetries < MAX_RECONNECT_TRIES {
+		err = c.connect()
+		if err != nil {
+			reconnectRetries++
+			time.Sleep(100 * time.Millisecond) //give a slight delay before retrying
+			continue
+		}
+		reconnectRetries = 0 //we successfully established a connection
+		err = c.listen(messageHandler)
+		if err != nil {
+			continue
+		}
+	}
 }
 
 /**
  * Establish connection to the server according to the configuration.
  */
-func (c *Client) Connect() (err error) {
-	if c.UseSSL {
-		c.Connection, err = tls.Dial("tcp", c.ConnectionString, &tls.Config{InsecureSkipVerify: true})
-	} else {
-		c.Connection, err = net.Dial("tcp", c.ConnectionString)
-	}
+func (c *Client) connect() (err error) {
+        if c.UseSSL {
+                c.Connection, err = tls.Dial("tcp", c.ConnectionString, &tls.Config{InsecureSkipVerify: true})
+        } else {
+                c.Connection, err = net.Dial("tcp", c.ConnectionString)
+        }
 
-	if err == nil {
-		fmt.Fprintf(c.Connection, USER+" %s %s %s :%s\r\n", c.Nick, c.Nick, c.Nick, c.Nick)
-		fmt.Fprintf(c.Connection, NICK+" %s\r\n", c.Nick)
-	}
+        if err == nil {
+                fmt.Fprintf(c.Connection, USER+" %s %s %s :%s\r\n", c.Nick, c.Nick, c.Nick, c.Nick)
+                fmt.Fprintf(c.Connection, NICK+" %s\r\n", c.Nick)
+        }
 
-	return err
+        return err
 }
 
 /**
  * Listen to the connection and call the callback function, messageHandler, on any received data
  */
-func (c Client) Listen(messageHandler MessageHandler) {
+func (c Client) listen(messageHandler MessageHandler) error {
 	//Start reading from the connection
 	connbuf := bufio.NewReader(c.Connection)
 	for {
 		str, err := connbuf.ReadString('\n')
 		if len(str) > 0 {
-			log.Println(str)
 			go messageHandler(c, model.NewMessage(str)) //handle message asynchronously so we can go back to listening
 		}
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 }
