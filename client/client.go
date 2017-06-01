@@ -35,7 +35,7 @@ func NewConnection(connectionString string, useSSL bool, nick string) Client {
  * Establishes a connection, listens to it, and handles re-establishing the connection
  * in case of errors.
  */
-func (c Client) Listen(messageHandler MessageHandler) {
+func (c *Client) Listen(messageHandler MessageHandler) {
 	var reconnectRetries = 0
 	var err error
 	for reconnectRetries < MAX_RECONNECT_TRIES {
@@ -74,7 +74,7 @@ func (c *Client) connect() (err error) {
 /**
  * Listen to the connection and call the callback function, messageHandler, on any received data
  */
-func (c Client) listen(messageHandler MessageHandler) error {
+func (c *Client) listen(messageHandler MessageHandler) error {
 	//Start reading from the connection
 	connbuf := bufio.NewReader(c.Connection)
 	for {
