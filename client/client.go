@@ -21,8 +21,8 @@ type Client struct {
 	Nick             string
 }
 
-func NewConnection(connectionString string, useSSL bool, nick string) Client {
-	conn := Client{
+func NewConnection(connectionString string, useSSL bool, nick string) *Client {
+	conn := &Client{
 		Nick:             nick,
 		ConnectionString: connectionString,
 		UseSSL:           useSSL,
