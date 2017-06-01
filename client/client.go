@@ -10,7 +10,7 @@ import (
 	"github.com/ynori7/go-irc/model"
 )
 
-type MessageHandler func(connection Client, message model.Message)
+type MessageHandler func(connection *Client, message model.Message)
 
 const MAX_RECONNECT_TRIES = 3
 
