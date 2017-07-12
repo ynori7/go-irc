@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/tls"
 	"fmt"
+        "log"
 	"net"
 	"time"
 
@@ -39,8 +40,10 @@ func (c *Client) Listen(messageHandler MessageHandler) {
 	var reconnectRetries = 0
 	var err error
 	for reconnectRetries < MAX_RECONNECT_TRIES {
+                log.Println("Connecting... attempt #", reconnectRetries+1)
 		err = c.connect()
 		if err != nil {
+                        log.Println("Error while connecting")
 			reconnectRetries++
 			time.Sleep(100 * time.Millisecond) //give a slight delay before retrying
 			continue
@@ -48,6 +51,7 @@ func (c *Client) Listen(messageHandler MessageHandler) {
 		reconnectRetries = 0 //we successfully established a connection
 		err = c.listen(messageHandler)
 		if err != nil {
+                        log.Println("Error encountered while listening. I'll try reconnecting.")
 			continue
 		}
 	}
