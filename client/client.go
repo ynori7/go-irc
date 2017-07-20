@@ -13,7 +13,10 @@ import (
 
 type MessageHandler func(connection *Client, message model.Message)
 
-const MAX_RECONNECT_TRIES = 3
+const (
+       MAX_RECONNECT_TRIES = 3
+       READ_TIMEOUT = 5 * time.Minute
+)
 
 type Client struct {
 	Connection       net.Conn
@@ -82,6 +85,8 @@ func (c *Client) listen(messageHandler MessageHandler) error {
 	//Start reading from the connection
 	connbuf := bufio.NewReader(c.Connection)
 	for {
+                c.Connection.SetReadDeadline(time.Now().Add(READ_TIMEOUT))
+
 		str, err := connbuf.ReadString('\n')
 		if len(str) > 0 {
 			go messageHandler(c, model.NewMessage(str)) //handle message asynchronously so we can go back to listening
